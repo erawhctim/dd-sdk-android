@@ -72,7 +72,9 @@ android {
     }
 
     testOptions {
-        unitTests.isReturnDefaultValues = true
+        unitTests.apply {
+            isReturnDefaultValues = true
+        }
     }
 
     buildTypes {
@@ -133,6 +135,7 @@ dependencies {
     testImplementation(Dependencies.Libraries.JUnit5)
     testImplementation(Dependencies.Libraries.TestTools)
     testImplementation(Dependencies.Libraries.OkHttpMock)
+    testImplementation("com.datadoghq:dd-java-agent:0.67.0")
     unmock(Dependencies.Libraries.Robolectric)
 
     // Static Analysis
