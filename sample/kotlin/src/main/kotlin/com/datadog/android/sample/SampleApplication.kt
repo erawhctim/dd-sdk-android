@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.datadog.android.Datadog
 import com.datadog.android.Datadog.setUserInfo
 import com.datadog.android.DatadogEventListener
+import com.datadog.android.DatadogInterceptor
 import com.datadog.android.core.configuration.Configuration
 import com.datadog.android.core.configuration.Credentials
 import com.datadog.android.log.Logger
@@ -30,13 +31,17 @@ import com.datadog.android.sample.picture.PicassoImageLoader
 import com.datadog.android.sample.user.UserFragment
 import com.datadog.android.timber.DatadogTree
 import com.datadog.android.tracing.AndroidTracer
+import com.datadog.android.tracing.TracedRequestListener
 import com.datadog.android.tracing.TracingInterceptor
 import com.facebook.stetho.Stetho
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import io.opentracing.Span
 import io.opentracing.util.GlobalTracer
 import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
@@ -46,12 +51,24 @@ class SampleApplication : Application() {
 
     private val tracedHosts = listOf(
         "datadoghq.com",
-        "127.0.0.1"
+        "127.0.0.1",
+        "unsplash.com"
     )
 
+    private val tracedRequestListener = object: TracedRequestListener {
+        override fun onRequestIntercepted(
+            request: Request,
+            span: Span,
+            response: Response?,
+            throwable: Throwable?
+        ) {
+            // Intercepted
+        }
+    }
+
     private val okHttpClient = OkHttpClient.Builder()
-        .addInterceptor(RumInterceptor())
-        .addNetworkInterceptor(TracingInterceptor())
+        .addInterceptor(DatadogInterceptor(tracedRequestListener))
+        .addNetworkInterceptor(TracingInterceptor(tracedRequestListener))
         .eventListenerFactory(DatadogEventListener.Factory())
         .build()
 
